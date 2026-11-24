@@ -1,5 +1,6 @@
 #include "cppforge/app/App.h"
 #include "cppforge/log/Logger.h"
+#include "cppforge/system/SystemInfo.h"
 
 #include <iostream>
 
@@ -35,6 +36,26 @@ int App::run()
         return 0;
     }
 
+    if (args_.has("--sysinfo") || args_.has("-s")) {
+        commandSystemInfo();;
+        return 0;
+    }
+
+    if (args_.has("--OS") || args_.has("-os")) {
+        std::cout << "OS          : "
+                  << cppforge::SystemInfo::operatingSystem()
+                  << '\n';
+        return 0;
+    }
+
+    if (args_.has("--Cpp_version") || args_.has("-c")) {
+        std::cout << "C++ Version : "
+                  << cppforge::SystemInfo::cppVersion()
+                  << '\n';
+        return 0;
+    }
+
+
     const auto& positional = args_.positional();
     if (positional.empty()) {
         printHelp();
@@ -49,6 +70,10 @@ int App::run()
         commandConfig();
     } else if (command == "hello") {
         commandHello();
+    }
+      else if (command == "sysinfo") {
+        commandSystemInfo();
+
     } else {
         Logger::error("Unknown command: " + command);
         std::cout << "Use --help to see available commands.\n";
@@ -67,6 +92,9 @@ void App::printHelp() const
         << "Options:\n"
         << "  -h, --help          Show this help\n"
         << "  -v, --version       Show version\n"
+        << "  -s, --sysinfo       Show sysinfo\n"
+        << "  -os, --OS           Show OS version\n"
+        << "  -c, ---Cpp_version  Show CPP version\n"
         << "      --config PATH   Use a config file\n"
         << "      --verbose       Enable debug logging\n\n"
         << "Commands:\n"
@@ -76,8 +104,12 @@ void App::printHelp() const
         << "Examples:\n"
         << "  cppforge info\n"
         << "  cppforge hello --name Developer\n"
-        << "  cppforge --config ./config.ini config\n";
+        << "  cppforge --config ./config.ini config\n"
+        << "  cppforge sysinfo\n"
+        ;
 }
+
+
 
 void App::commandInfo() const
 {
@@ -108,5 +140,34 @@ void App::commandHello() const
     Logger::info("Hello, " + name + "!");
     Logger::debug("Debug output is enabled.");
 }
+
+
+void App::commandSystemInfo() const
+{
+    std::cout << "OS          : "
+              << cppforge::SystemInfo::operatingSystem()
+              << '\n';
+
+    std::cout << "C++ Version : "
+              << cppforge::SystemInfo::cppVersion()
+              << '\n';
+}
+
+// void App::commandSystemInfo() const
+// {
+//     std::cout << "--sysinfo\n";
+
+//     std::cout << "  --OS          : "
+//               << cppforge::SystemInfo::operatingSystem()
+//               << '\n';
+
+//     std::cout << "  --Cpp_version : "
+//               << cppforge::SystemInfo::cppVersion()
+//               << '\n';
+// }
+
+
+
+
 
 } // namespace cppforge

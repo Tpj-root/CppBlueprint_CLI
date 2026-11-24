@@ -12,12 +12,16 @@ add_library(CppBlueprint_core
     src/config/Config.cpp
     src/log/Logger.cpp
     src/app/App.cpp
+    src/system/SystemInfo.cpp
+    src/main.cpp
 
     # Header files (display in Qt Creator)
     include/cppforge/cli/Arguments.h
     include/cppforge/config/Config.h
     include/cppforge/log/Logger.h
     include/cppforge/app/App.h
+    include/cppforge/system/SystemInfo.h
+
 )
 
 

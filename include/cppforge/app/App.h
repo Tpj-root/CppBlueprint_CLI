@@ -16,6 +16,7 @@ private:
     void commandInfo() const;
     void commandConfig() const;
     void commandHello() const;
+    void commandSystemInfo() const;
 
     const Arguments& args_;
     Config config_;
