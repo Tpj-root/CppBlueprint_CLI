@@ -1,6 +1,8 @@
 #include "cppforge/app/App.h"
 #include "cppforge/log/Logger.h"
 #include "cppforge/system/SystemInfo.h"
+#include "cppforge/commands/BackupCommand.h"
+
 
 #include <iostream>
 
@@ -73,6 +75,9 @@ int App::run()
     }
       else if (command == "sysinfo") {
         commandSystemInfo();
+    } 
+    else if (command == cppforge::BackupCommand::name()) {
+        return cppforge::BackupCommand::execute();
 
     } else {
         Logger::error("Unknown command: " + command);
@@ -100,6 +105,7 @@ void App::printHelp() const
         << "Commands:\n"
         << "  info                Show app information\n"
         << "  config              Display loaded settings\n"
+        << "  backup     " << cppforge::BackupCommand::description() << "\n"
         << "  hello [--name NAME]  Print a greeting\n\n"
         << "Examples:\n"
         << "  cppforge info\n"
