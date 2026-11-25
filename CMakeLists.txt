@@ -14,6 +14,7 @@ add_library(CppBlueprint_core
     src/app/App.cpp
     src/system/SystemInfo.cpp
     src/commands/BackupCommand.cpp
+    src/app/CommandRegistry.cpp
 
     src/main.cpp
 
@@ -25,7 +26,7 @@ add_library(CppBlueprint_core
     include/cppforge/app/App.h
     include/cppforge/system/SystemInfo.h
     include/cppforge/commands/BackupCommand.h
-
+    include/cppforge/app/CommandRegistry.h
 
 )
 

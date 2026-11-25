@@ -209,3 +209,35 @@ Notice that these are `static` functions. You don't need to create an object:
 ```
 cppforge::BackupCommand::execute();
 ```
+
+
+## **9. How to add a new command from now on**
+
+Suppose you want a `clean` command.
+
+## **Only 3 steps**
+
+**1. Create files**
+
+```
+include/cppforge/commands/CleanCommand.h
+src/commands/CleanCommand.cpp
+```
+
+**2. Add the new library to CMake**
+
+```
+src/commands/CleanCommand.cpp
+include/cppforge/commands/CleanCommand.h
+```
+
+**3. Register it in&#x20;**`App.cpp`
+
+```
+registry_.add(
+    "clean",
+    "Clean temporary files",
+    []() {
+        return CleanCommand::execute();
+    }
+);

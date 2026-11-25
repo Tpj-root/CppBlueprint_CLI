@@ -2,11 +2,15 @@
 #include "cppforge/log/Logger.h"
 #include "cppforge/system/SystemInfo.h"
 #include "cppforge/commands/BackupCommand.h"
+#include <iostream>
+
+
 
 
 #include <iostream>
 
 namespace cppforge {
+
 
 App::App(const Arguments& args)
     : args_(args),
@@ -14,51 +18,107 @@ App::App(const Arguments& args)
       appName_("CppForge"),
       appVersion_("1.0.0")
 {
-    // Read config file, if present. Defaults remain active if not found.
-    if (!config_.load(configPath_))
-        Logger::warning("Config file not found: " + configPath_ + " (using built-in defaults)");
+    if (!config_.load(configPath_)) {
+        Logger::warning("Config file not found: " + configPath_);
+    }
 
     appName_ = config_.get("app", "name", appName_);
     appVersion_ = config_.get("app", "version", appVersion_);
 
-    // CLI flags override config file values.
-    const bool verbose = args_.has("--verbose") || config_.getBool("general", "verbose", false);
+    const bool verbose =
+        args_.has("--verbose") ||
+        config_.getBool("general", "verbose", false);
+
     Logger::setVerbose(verbose);
+
+    // Register all available CLI commands
+    registerCommands();
 }
+
+
+
+
+// int App::run()
+// {
+//     if (args_.has("--help") || args_.has("-h")) {
+//         printHelp();
+//         return 0;
+//     }
+
+//     if (args_.has("--version") || args_.has("-v")) {
+//         std::cout << appName_ << " " << appVersion_ << '\n';
+//         return 0;
+//     }
+
+//     if (args_.has("--sysinfo") || args_.has("-s")) {
+//         commandSystemInfo();;
+//         return 0;
+//     }
+
+//     if (args_.has("--OS") || args_.has("-os")) {
+//         std::cout << "OS          : "
+//                   << cppforge::SystemInfo::operatingSystem()
+//                   << '\n';
+//         return 0;
+//     }
+
+//     if (args_.has("--Cpp_version") || args_.has("-c")) {
+//         std::cout << "C++ Version : "
+//                   << cppforge::SystemInfo::cppVersion()
+//                   << '\n';
+//         return 0;
+//     }
+
+
+//     const auto& positional = args_.positional();
+//     if (positional.empty()) {
+//         printHelp();
+//         return 0;
+//     }
+
+//     const std::string command = positional.front();
+
+//     if (command == "info") {
+//         commandInfo();
+//     } else if (command == "config") {
+//         commandConfig();
+//     } else if (command == "hello") {
+//         commandHello();
+//     }
+//       else if (command == "sysinfo") {
+//         commandSystemInfo();
+//     } 
+//     else if (command == cppforge::BackupCommand::name()) {
+//         return cppforge::BackupCommand::execute();
+
+//     } else {
+//         Logger::error("Unknown command: " + command);
+//         std::cout << "Use --help to see available commands.\n";
+//         return 1;
+//     }
+
+//     return 0;
+// }
+
+
 
 int App::run()
 {
+    // Global help
     if (args_.has("--help") || args_.has("-h")) {
         printHelp();
         return 0;
     }
 
+    // Version
     if (args_.has("--version") || args_.has("-v")) {
         std::cout << appName_ << " " << appVersion_ << '\n';
         return 0;
     }
 
-    if (args_.has("--sysinfo") || args_.has("-s")) {
-        commandSystemInfo();;
-        return 0;
-    }
-
-    if (args_.has("--OS") || args_.has("-os")) {
-        std::cout << "OS          : "
-                  << cppforge::SystemInfo::operatingSystem()
-                  << '\n';
-        return 0;
-    }
-
-    if (args_.has("--Cpp_version") || args_.has("-c")) {
-        std::cout << "C++ Version : "
-                  << cppforge::SystemInfo::cppVersion()
-                  << '\n';
-        return 0;
-    }
-
-
+    // Get command
     const auto& positional = args_.positional();
+
     if (positional.empty()) {
         printHelp();
         return 0;
@@ -66,54 +126,64 @@ int App::run()
 
     const std::string command = positional.front();
 
-    if (command == "info") {
-        commandInfo();
-    } else if (command == "config") {
-        commandConfig();
-    } else if (command == "hello") {
-        commandHello();
-    }
-      else if (command == "sysinfo") {
-        commandSystemInfo();
-    } 
-    else if (command == cppforge::BackupCommand::name()) {
-        return cppforge::BackupCommand::execute();
-
-    } else {
-        Logger::error("Unknown command: " + command);
-        std::cout << "Use --help to see available commands.\n";
-        return 1;
-    }
-
-    return 0;
+    // Registry executes the matching command
+    return registry_.execute(command);
 }
+
+
+
+
+
+
+
+
+
+
+// void App::printHelp() const
+// {
+//     std::cout
+//         << appName_ << " - expandable C++ CLI template\n\n"
+//         << "Usage:\n"
+//         << "  cppforge [options] <command>\n\n"
+//         << "Options:\n"
+//         << "  -h, --help          Show this help\n"
+//         << "  -v, --version       Show version\n"
+//         << "  -s, --sysinfo       Show sysinfo\n"
+//         << "  -os, --OS           Show OS version\n"
+//         << "  -c, ---Cpp_version  Show CPP version\n"
+//         << "      --config PATH   Use a config file\n"
+//         << "      --verbose       Enable debug logging\n\n"
+//         << "Commands:\n"
+//         << "  info                Show app information\n"
+//         << "  config              Display loaded settings\n"
+//         << "  backup     " << cppforge::BackupCommand::description() << "\n"
+//         << "  hello [--name NAME]  Print a greeting\n\n"
+//         << "Examples:\n"
+//         << "  cppforge info\n"
+//         << "  cppforge hello --name Developer\n"
+//         << "  cppforge --config ./config.ini config\n"
+//         << "  cppforge sysinfo\n"
+//         ;
+// }
 
 void App::printHelp() const
 {
     std::cout
-        << appName_ << " - expandable C++ CLI template\n\n"
+        << appName_ << " - CLI Application\n\n"
         << "Usage:\n"
         << "  cppforge [options] <command>\n\n"
         << "Options:\n"
-        << "  -h, --help          Show this help\n"
-        << "  -v, --version       Show version\n"
-        << "  -s, --sysinfo       Show sysinfo\n"
-        << "  -os, --OS           Show OS version\n"
-        << "  -c, ---Cpp_version  Show CPP version\n"
-        << "      --config PATH   Use a config file\n"
-        << "      --verbose       Enable debug logging\n\n"
-        << "Commands:\n"
-        << "  info                Show app information\n"
-        << "  config              Display loaded settings\n"
-        << "  backup     " << cppforge::BackupCommand::description() << "\n"
-        << "  hello [--name NAME]  Print a greeting\n\n"
-        << "Examples:\n"
-        << "  cppforge info\n"
-        << "  cppforge hello --name Developer\n"
-        << "  cppforge --config ./config.ini config\n"
-        << "  cppforge sysinfo\n"
-        ;
+        << "  -h, --help       Show help\n"
+        << "  -v, --version    Show version\n"
+        << "      --config     Config file\n"
+        << "      --verbose    Enable debug logging\n\n";
+
+    registry_.printHelp();
 }
+
+
+
+
 
 
 
@@ -173,7 +243,52 @@ void App::commandSystemInfo() const
 // }
 
 
+void App::registerCommands()
+{
+    registry_.add(
+        "info",
+        "Show application information",
+        [this]() {
+            commandInfo();
+            return 0;
+        }
+    );
 
+    registry_.add(
+        "config",
+        "Display configuration",
+        [this]() {
+            commandConfig();
+            return 0;
+        }
+    );
+
+    registry_.add(
+        "hello",
+        "Print a greeting",
+        [this]() {
+            commandHello();
+            return 0;
+        }
+    );
+
+    registry_.add(
+        "sysinfo",
+        "Show system information",
+        [this]() {
+            commandSystemInfo();
+            return 0;
+        }
+    );
+
+    registry_.add(
+        cppforge::BackupCommand::name(),
+        cppforge::BackupCommand::description(),
+        []() {
+            return cppforge::BackupCommand::execute();
+        }
+    );
+}
 
 
 } // namespace cppforge
