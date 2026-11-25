@@ -211,33 +211,52 @@ cppforge::BackupCommand::execute();
 ```
 
 
-## **9. How to add a new command from now on**
 
-Suppose you want a `clean` command.
+## 9. Adding a new command — the whole workflow
 
-## **Only 3 steps**
+Example: a `version`-style `date` command.
 
-**1. Create files**
-
-```
-include/cppforge/commands/CleanCommand.h
-src/commands/CleanCommand.cpp
-```
-
-**2. Add the new library to CMake**
-
-```
-src/commands/CleanCommand.cpp
-include/cppforge/commands/CleanCommand.h
+**Step 1** — create the header:
+```cpp
+// include/cppforge/commands/DateCommand.h
+#pragma once
+namespace cppforge {
+struct AppContext;
+class DateCommand {
+public:
+    static int execute(const AppContext& ctx);
+};
+}
 ```
 
-**3. Register it in&#x20;**`App.cpp`
-
+**Step 2** — create the source:
+```cpp
+// src/commands/DateCommand.cpp
+#include "cppforge/commands/DateCommand.h"
+#include <ctime>
+#include <iostream>
+namespace cppforge {
+int DateCommand::execute(const AppContext&) {
+    std::time_t t = std::time(nullptr);
+    std::cout << std::ctime(&t);
+    return 0;
+}
+}
 ```
-registry_.add(
-    "clean",
-    "Clean temporary files",
-    []() {
-        return CleanCommand::execute();
-    }
-);
+
+**Step 3** — one block in `registerCommands()`:
+```cpp
+registry_.add({
+    "date", "-d", "--date",
+    "Show current date and time",
+    "date",
+    "DateCommand::execute",
+    [](const AppContext& ctx) { return DateCommand::execute(ctx); }
+});
+```
+
+**Step 4** — add the two files to `CMakeLists.txt`.
+
+Done — help menu, short/long options, and examples all update automatically. No `printHelp` edit needed.
+
+

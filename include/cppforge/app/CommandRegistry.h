@@ -1,40 +1,30 @@
 #pragma once
 
-#include <functional>
+#include "cppforge/commands/Command.h"
+
 #include <string>
 #include <vector>
 
 namespace cppforge {
 
+struct AppContext;
+
 class CommandRegistry {
 public:
+    void add(Command cmd);
 
-    // Type of a command function
-    using CommandFunction = std::function<int()>;
+    // True if `token` matches name, short, or long option.
+    bool matches(const std::string& token) const;
 
-    // Store one command
-    void add(const std::string& name,
-             const std::string& description,
-             CommandFunction function);
+    // Execute by any of the three identifiers.
+    int execute(const std::string& token, const AppContext& ctx) const;
 
-    // Execute command by name
-    int execute(const std::string& name) const;
-
-    // Check if command exists
-    bool exists(const std::string& name) const;
-
-    // Print all registered commands
-    void printHelp() const;
+    // Auto-generated from the registered commands.
+    void printHelp(const std::string& appName,
+                   const std::string& appVersion) const;
 
 private:
-
-    struct Command {
-        std::string name;
-        std::string description;
-        CommandFunction function;
-    };
-
     std::vector<Command> commands_;
 };
 
-}
+} // namespace cppforge

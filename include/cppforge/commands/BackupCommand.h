@@ -1,15 +1,8 @@
 #pragma once
-
-#include <string>
-
 namespace cppforge {
-
+struct AppContext;
 class BackupCommand {
 public:
-    static std::string name();
-    static std::string description();
-
-    static int execute();
+    static int execute(const AppContext& ctx);
 };
-
 }
